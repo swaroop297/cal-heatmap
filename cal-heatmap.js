@@ -7,7 +7,8 @@
  */
 
 var d3 = typeof require === "function" ? require("d3") : window.d3;
-
+var labelNames = {39: 'PASS', 29: 'FAIL', 49: 'UNTESTED', 9: 'TIME OUT', 19: 'RUNNING', 59:'MIXED'}
+var legendNames = ['TIME OUT', 'RUNNING', 'FAIL', 'PASS', 'UNTESTED', 'MIXED'];
 var CalHeatMap = function() {
 	"use strict";
 
@@ -199,8 +200,8 @@ var CalHeatMap = function() {
 
 		// Formatting of the title displayed when hovering a subDomain cell
 		subDomainTitleFormat: {
-			empty: "{date}",
-			filled: "{count} {name} {connector} {date}"
+			empty: "{count} {date}",
+			filled: "{count} {connector} {date}"
 		},
 
 		// Formatting of the {date} used in subDomainTitleFormat
@@ -223,9 +224,7 @@ var CalHeatMap = function() {
 
 		// Formatting of the title displayed when hovering a legend cell
 		legendTitleFormat: {
-			lower: "less than {min} {name}",
-			inner: "between {down} and {up} {name}",
-			upper: "more than {max} {name}"
+			text: "{name}"
 		},
 
 		// Animation duration, in ms
@@ -1645,6 +1644,7 @@ CalHeatMap.prototype = {
 
 		if (d.v === null && !this.options.considerMissingDataAsZero) {
 			return (this.options.subDomainTitleFormat.empty).format({
+				count: "Not run On",
 				date: this.formatDate(new Date(d.t), this.options.subDomainDateFormat)
 			});
 		} else {
@@ -1655,7 +1655,7 @@ CalHeatMap.prototype = {
 			}
 
 			return (this.options.subDomainTitleFormat.filled).format({
-				count: this.formatNumber(value),
+				count: labelNames[value],
 				name: this.options.itemName[(value !== 1 ? 1: 0)],
 				connector: this._domainType[this.options.subDomain].format.connector,
 				date: this.formatDate(new Date(d.t), this.options.subDomainDateFormat)
@@ -3227,23 +3227,9 @@ Legend.prototype.redraw = function(width) {
 	}
 
 	legendItem.select("title").text(function(d, i) {
-		if (i === 0) {
-			return (options.legendTitleFormat.lower).format({
-				min: options.legend[i],
-				name: options.itemName[1]
-			});
-		} else if (i === _legend.length-1) {
-			return (options.legendTitleFormat.upper).format({
-				max: options.legend[i-1],
-				name: options.itemName[1]
-			});
-		} else {
-			return (options.legendTitleFormat.inner).format({
-				down: options.legend[i-1],
-				up: options.legend[i],
-				name: options.itemName[1]
-			});
-		}
+		return (options.legendTitleFormat.text).format({
+			name: legendNames[i]
+		});
 	})
 	;
 
